@@ -45,7 +45,7 @@ class Player {
     this.y = y
     this.width = 60
     this.height = 60
-    this.puntos = 0
+    this.points = 0
     this.player = new Image()
     this.player.src = img
     this.draw()
@@ -68,7 +68,7 @@ class Block {
   constructor(x, y, points) {
     this.x = x
     this.y = y
-    this.points = points
+    this.points = 10
     this.width = 60
     this.height = 60
     this.img = new Image()
@@ -179,6 +179,7 @@ function update() {
   movePlayer2()
   drawBloques()
   checkCollisions()
+  drawScore
 }
 
 function loadScreen() {
@@ -197,9 +198,11 @@ function generateBloques() {
     for (let j = 0; j < 600; j += 60) {
       const num1 = Math.random()
       const num2 = Math.floor(Math.random() * (5 - 1) + 1)
-      bloques.push(new Block(j, i, num2))
       if (num1 < 0.5) {
-      habilidades.push(new Skill(j, i, num2))
+        habilidades.push(new Skill(j, i, num2))
+        bloques.push(new Block(j, i, num2))
+      } else {
+        bloques.push(new Block(j, i, 0))
       }
     }
   }
@@ -217,18 +220,31 @@ function checkCollisions() {
   bloques.forEach((bloque, index) => {
     if (player1.isTouching(bloque)) {
       bloques.splice(index, 1)
+      player1.points += bloques.points
     }
     if (player2.isTouching(bloque)) {
       bloques.splice(index, 1)
+      player2.points += bloques.points
     }
-  }
-  )
+  })
+ 
 }
-function whoWins(){
-  if(points.player1 > points.player2)
-  return player1 
 
+function drawScore() {
+  ctx.fillText('Score: ' + points.player1, 8, 20)
+  ctx.fillText('Score: ' + points.player2, 50, 20)
 }
+
+function whoWins() {
+  if (points.player1 > points.player2) {
+    ctx.font = '25px Avenir'
+    ctx.fillText('Player 1 Wins', 100, 300)
+  } else {
+    ctx.font = '25px Avenir'
+    ctx.fillText('Player 2 wins', 100, 300)
+  }
+}
+
 document.addEventListener('keydown', ({ keyCode }) => {
   switch (keyCode) {
     case 13:
