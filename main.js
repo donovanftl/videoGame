@@ -8,7 +8,7 @@ const images = {
   play2: 'assets/player2.png',
   bloque: 'assets/bloque.png',
   html: 'assets/HTML.png',
-  css: 'assets/CSS.jpg',
+  css: 'assets/logo-css-png-5.png',
   nodejs: 'assets/nodejs.png',
   bootstrap: 'assets/Bootstrap.png',
   react: 'assets/react.png',
@@ -18,7 +18,6 @@ const images = {
 let interval
 const bloques = []
 const habilidades = []
-const friction = 0.8
 const keys = []
 
 // clases
@@ -31,13 +30,11 @@ class Background {
     this.img = new Image()
     this.img.src = images.bg
     this.img.onload = () => {
-      this.draw() //esto manda a llamar el metodo draw, no tienes que dibujar de nuevo aaca, para eso es ese metodo
+      this.draw()
       loadScreen()
     }
   }
   draw() {
-    // no olvides el this, estas usando una propiedad de tu clase, no una variable
-
     ctx.drawImage(this.img, this.x, this.y, canvas.width, canvas.height)
   }
 }
@@ -46,11 +43,20 @@ class Player {
   constructor(x, y, img) {
     this.x = x
     this.y = y
-    this.width = 80
-    this.height = 80
+    this.width = 60
+    this.height = 60
+    this.puntos = 0
     this.player = new Image()
     this.player.src = img
     this.draw()
+  }
+  isTouching(bloque) {
+    return (
+      this.x < bloque.x + bloque.width &&
+      this.x + this.width > bloque.x &&
+      this.y < bloque.y + bloque.height &&
+      this.y + this.height > bloque.y
+    )
   }
   draw() {
     ctx.drawImage(this.player, this.x, this.y, this.width, this.height)
@@ -59,14 +65,14 @@ class Player {
 }
 
 class Block {
-  constructor(x, y) {
+  constructor(x, y, points) {
     this.x = x
     this.y = y
+    this.points = points
     this.width = 60
     this.height = 60
     this.img = new Image()
     this.img.src = images.bloque
-    this.draw()
   }
   draw() {
     ctx.drawImage(this.img, this.x, this.y, this.width, this.height)
@@ -77,9 +83,9 @@ class Skill {
   constructor(x, y, num) {
     this.x = x
     this.y = y
-    this.height = 60
-    this.width = 60
-    this.num = this.num
+    this.height = 45
+    this.width = 45
+    this.num = num
     this.html = new Image()
     this.html.src = images.html
     this.css = new Image()
@@ -114,7 +120,7 @@ class Skill {
 // instancias
 const bg = new Background()
 const player1 = new Player(100, 120, images.play1)
-const player2 = new Player(150, 120, images.play2)
+const player2 = new Player(300, 120, images.play2)
 
 // funciones principales
 function movePlayer1() {
@@ -166,13 +172,13 @@ document.body.addEventListener('keyup', (e) => {
 function update() {
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   bg.draw()
+  drawHabilidades()
   player1.draw()
   player2.draw()
   movePlayer1()
   movePlayer2()
-  drawHabilidades()
-  generateBloques()
   drawBloques()
+  checkCollisions()
 }
 
 function loadScreen() {
@@ -182,20 +188,21 @@ function loadScreen() {
 }
 
 function start() {
+  generateBloques()
   interval = setInterval(update, 1000 / 60)
 }
 
 function generateBloques() {
   for (let i = 215; i < 600; i += 60) {
     for (let j = 0; j < 600; j += 60) {
-    bloques.push(new Block(j, i))
-    const num1 = Math.random()
-    const num2 = Math.floor(Math.random() * (5 - 1) + 1)
-    if (num1 < 0.5) {
-      habilidades.push(new Skill(x, y, num2))
+      const num1 = Math.random()
+      const num2 = Math.floor(Math.random() * (5 - 1) + 1)
+      bloques.push(new Block(j, i, num2))
+      if (num1 < 0.5) {
+      habilidades.push(new Skill(j, i, num2))
+      }
     }
   }
-}
 }
 
 function drawBloques() {
@@ -203,9 +210,25 @@ function drawBloques() {
 }
 
 function drawHabilidades() {
-  habilidades.forEach((habilidad) => habilidades.draw())
+  habilidades.forEach((habilidad) => habilidad.draw())
 }
 
+function checkCollisions() {
+  bloques.forEach((bloque, index) => {
+    if (player1.isTouching(bloque)) {
+      bloques.splice(index, 1)
+    }
+    if (player2.isTouching(bloque)) {
+      bloques.splice(index, 1)
+    }
+  }
+  )
+}
+function whoWins(){
+  if(points.player1 > points.player2)
+  return player1 
+
+}
 document.addEventListener('keydown', ({ keyCode }) => {
   switch (keyCode) {
     case 13:
