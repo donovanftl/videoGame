@@ -13,6 +13,8 @@ const images = {
   bootstrap: 'assets/Bootstrap.png',
   react: 'assets/react.png',
   logo: 'assets/Logo3.png',
+  play1wins: 'assets/player1wins.png',
+  play2wins: 'assets/player2wins.png'
 }
 
 let interval
@@ -51,24 +53,23 @@ class Player {
     this.draw()
   }
   isTouching(bloque) {
-    return (
-      this.x < bloque.x + bloque.width &&
-      this.x + this.width > bloque.x &&
-      this.y < bloque.y + bloque.height &&
-      this.y + this.height > bloque.y
+    if (
+      bloque.x < this.x + this.width &&
+      bloque.x + bloque.width > this.x &&
+      bloque.y < this.y + this.height &&
+      bloque.height + bloque.y > this.y
     )
+      return true
   }
   draw() {
-    ctx.drawImage(this.player, this.x, this.y, this.width, this.height)
     ctx.drawImage(this.player, this.x, this.y, this.width, this.height)
   }
 }
 
 class Block {
-  constructor(x, y, points) {
+  constructor(x, y) {
     this.x = x
     this.y = y
-    this.points = 10
     this.width = 60
     this.height = 60
     this.img = new Image()
@@ -81,6 +82,7 @@ class Block {
 
 class Skill {
   constructor(x, y, num) {
+    this.istouched = false
     this.x = x
     this.y = y
     this.height = 45
@@ -119,8 +121,8 @@ class Skill {
 
 // instancias
 const bg = new Background()
-const player1 = new Player(100, 120, images.play1)
-const player2 = new Player(300, 120, images.play2)
+const player1 = new Player(100, 150, images.play1)
+const player2 = new Player(300, 150, images.play2)
 
 // funciones principales
 function movePlayer1() {
@@ -157,7 +159,7 @@ function movePlayer2() {
   if (keys[38]) {
     player2.y--
   }
-}
+}setInterval
 
 //para movimiento
 document.body.addEventListener('keydown', (e) => {
@@ -179,30 +181,30 @@ function update() {
   movePlayer2()
   drawBloques()
   checkCollisions()
-  drawScore
+  whoWins()
 }
 
 function loadScreen() {
   const logo = new Image()
   logo.src = images.logo
-  logo.onload = () => ctx.drawImage(logo, 0, 0, 600, 600)
+  logo.onload = () => ctx.drawImage(logo, 0, 0, 600, 635)
 }
 
 function start() {
   generateBloques()
+  if (interval) return
   interval = setInterval(update, 1000 / 60)
 }
 
 function generateBloques() {
   for (let i = 215; i < 600; i += 60) {
     for (let j = 0; j < 600; j += 60) {
-      const num1 = Math.random()
-      const num2 = Math.floor(Math.random() * (5 - 1) + 1)
-      if (num1 < 0.5) {
-        habilidades.push(new Skill(j, i, num2))
-        bloques.push(new Block(j, i, num2))
+      const num = Math.floor(Math.random() * (5 - 1) + 1)
+      if (Math.random() > 0.5) {
+        habilidades.push(new Skill(j, i, num))
+        bloques.push(new Block(j, i))
       } else {
-        bloques.push(new Block(j, i, 0))
+        bloques.push(new Block(j, i))
       }
     }
   }
@@ -220,29 +222,46 @@ function checkCollisions() {
   bloques.forEach((bloque, index) => {
     if (player1.isTouching(bloque)) {
       bloques.splice(index, 1)
-      player1.points += bloques.points
     }
     if (player2.isTouching(bloque)) {
       bloques.splice(index, 1)
-      player2.points += bloques.points
+    }
+    ctx.font = '20px Avenir'
+    ctx.fillText('Score: ' + player1.points, 8, 20)
+    ctx.fillText('Score: ' + player2.points, 500, 20)
+  })
+  habilidades.forEach((skill) => {
+    if (player1.isTouching(skill) && !skill.istouched) {
+      player1.points++
+      skill.istouched = true
+    }
+    if (player2.isTouching(skill) && !skill.istouched) {
+      player2.points++
+      skill.istouched = true
     }
   })
- 
-}
-
-function drawScore() {
-  ctx.fillText('Score: ' + points.player1, 8, 20)
-  ctx.fillText('Score: ' + points.player2, 50, 20)
 }
 
 function whoWins() {
-  if (points.player1 > points.player2) {
-    ctx.font = '25px Avenir'
-    ctx.fillText('Player 1 Wins', 100, 300)
-  } else {
-    ctx.font = '25px Avenir'
-    ctx.fillText('Player 2 wins', 100, 300)
+  // console.log(bloques === ![])
+  if (bloques == ![]) {
+    if (player1.points > player2.points) {
+      const play1wins = new Image()
+      play1wins.src = images.play1wins
+      play1wins.onload = () => ctx.drawImage(play1wins, 225, 200, 200, 250)
+    } else if (player1.points < player2.points) {
+      const play2wins = new Image()
+      play2wins.src = images.play2wins
+      play2wins.onload = () => ctx.drawImage(play2wins, 225, 200, 200, 250)
+    } else {
+      ctx.font = '25px Avenir'
+      ctx.fillText('Tie', 100, 300)
+    }
+    gameOver()
   }
+}
+function gameOver() {
+  clearInterval(interval)
 }
 
 document.addEventListener('keydown', ({ keyCode }) => {
