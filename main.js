@@ -17,6 +17,8 @@ const images = {
   play2wins: 'assets/player2wins.png'
 }
 
+
+
 let interval
 const bloques = []
 const habilidades = []
@@ -188,12 +190,18 @@ function loadScreen() {
   const logo = new Image()
   logo.src = images.logo
   logo.onload = () => ctx.drawImage(logo, 0, 0, 600, 635)
+  
 }
 
 function start() {
+  this.mariotheme = new Audio('assets/super-mario-bros.mp3')
+  this.mariotheme.volume = 0.2;
+  this.mariotheme.load()
+  this.mariotheme.play()
   generateBloques()
   if (interval) return
   interval = setInterval(update, 1000 / 60)
+  
 }
 
 function generateBloques() {
@@ -234,10 +242,18 @@ function checkCollisions() {
     if (player1.isTouching(skill) && !skill.istouched) {
       player1.points++
       skill.istouched = true
+      this.play1coin = new Audio('assets/Mario-coin-sound.mp3')
+      this.play1coin.volume = 0.1;
+      this.play1coin.load()
+      this.play1coin.play()
     }
     if (player2.isTouching(skill) && !skill.istouched) {
       player2.points++
       skill.istouched = true
+      this.play2coin = new Audio('assets/Mario-coin-sound.mp3')
+      this.play2coin.volume = 0.1;
+      this.play2coin.load()
+      this.play2coin.play()
     }
   })
 }
@@ -249,10 +265,21 @@ function whoWins() {
       const play1wins = new Image()
       play1wins.src = images.play1wins
       play1wins.onload = () => ctx.drawImage(play1wins, 225, 200, 200, 250)
+      this.play1wins = new Audio('assets/Player_1_Wins.mp3')
+      this.play1wins.volume = 0.2;
+      this.mariotheme.pause()
+      this.play1wins.load()
+      this.play1wins.play()
+
     } else if (player1.points < player2.points) {
       const play2wins = new Image()
       play2wins.src = images.play2wins
       play2wins.onload = () => ctx.drawImage(play2wins, 225, 200, 200, 250)
+      this.play2wins = new Audio('assets/Player_2_Wins.mp3')
+      this.play2wins.volume = 0.2;
+      this.mariotheme.pause()
+      this.play2wins.load()
+      this.play2wins.play()
     } else {
       ctx.font = '25px Avenir'
       ctx.fillText('Tie', 100, 300)
